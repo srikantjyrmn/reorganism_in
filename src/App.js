@@ -19,7 +19,7 @@ const MatrixChatPage = () => {
 
       try {
         const functions = getFunctions();
-        const chatFunction = httpsCallable(functions, 'chat_fn');
+        const chatFunction = httpsCallable(functions, 'chat_fn_rpi');
         console.log('Calling Firebase function with input:', input);
         const result = await chatFunction({ message: input });
         console.log('Firebase function response:', result);

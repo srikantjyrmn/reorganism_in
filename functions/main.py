@@ -4,7 +4,7 @@
 
 from firebase_functions import https_fn
 from firebase_admin import initialize_app
-from chat_functions import chat_with_openai
+from chat_functions import chat_with_openai, chat_with_pi
 import os
 initialize_app()
 
@@ -28,6 +28,33 @@ def chat_fn(req: https_fn.CallableRequest) -> dict:
             claude_response = chat_with_openai(message)
             if claude_response:
                 full_response = f"{claude_response}"
+            else:
+                full_response = f"{heard_response}\n\nClaude did not provide a response."
+        except Exception as claude_error:
+            print(f"Error calling Claude API: {str(claude_error)}")
+            full_response = f"{heard_response}\n\nUnable to get a response from Claude at this time."
+        
+        return {"result": full_response}
+    except Exception as e:
+        print(f"Error in chat function: {str(e)}")
+        return {"error": str(e)}
+    
+@https_fn.on_call()
+def chat_fn_rpi(req: https_fn.CallableRequest) -> dict:
+    try:
+        data = req.data
+        message = data.get('message', '')
+        
+        # First, create the "Yes, I heard" response
+        heard_response = f"Yes, I heard: {message}"
+        
+        # Try to get a response from Claude
+        try:
+            # Use Firebase config in production, fallback to environment variable
+            
+            response = chat_with_pi(message)
+            if response:
+                full_response = f"{response['result']}"
             else:
                 full_response = f"{heard_response}\n\nClaude did not provide a response."
         except Exception as claude_error:

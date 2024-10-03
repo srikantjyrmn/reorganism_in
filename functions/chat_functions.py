@@ -1,9 +1,11 @@
 import os
 from dotenv import load_dotenv
 load_dotenv()
-
+import requests
+from flask import jsonify
 from prompts import self_rag_agent
 from openai import OpenAI
+import json
 
 def chat_with_openai(message, system_prompt = self_rag_agent):
     """Chat with the OpenAI API
@@ -35,3 +37,20 @@ def chat_with_openai(message, system_prompt = self_rag_agent):
     except Exception as e:
         print(f"Error in OpenAI API request: {e}")
         return f"Error in OpenAI API request: {e}"
+
+from flask import Response
+
+def chat_with_pi(message):
+    if not message:
+        return jsonify({'error': 'Missing ngrok_url or text'}), 400
+
+    try:
+        response = requests.post(
+            f'https://knowing-sincerely-hyena.ngrok-free.app/chat',
+            json={'text': message},
+            timeout=30
+        )
+        
+        return json.loads(response.content)#['result']
+    except requests.RequestException as e:
+        return jsonify({'error': str(e)}), 500
